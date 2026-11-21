@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#08131b">
+<title>VALLEY CITY — Modular Build</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#08131b;color:#f4f7f8;font-family:Inter,system-ui,Arial,sans-serif}#game{position:fixed;inset:0}canvas{display:block;touch-action:none}#hud{position:fixed;inset:0;pointer-events:none}.top{position:absolute;top:10px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:flex-start}.panel,.brand{background:#07131ddd;border:1px solid #ffffff25;backdrop-filter:blur(10px);border-radius:13px;padding:10px 13px}.brand b{letter-spacing:2px;font-size:13px}.brand small{display:block;color:#9eb2bd;font-size:9px;letter-spacing:2px;margin-top:3px}.stats{text-align:right;font-size:10px;color:#c8d7dc}.stats strong{font-size:14px;color:white}.mission{position:absolute;top:76px;left:12px;font-size:10px;color:#c8d8da}.mission b{display:block;color:#9be0b8;letter-spacing:2px;margin-bottom:3px}.bottom{position:absolute;bottom:calc(15px + env(safe-area-inset-bottom));left:12px;right:12px;display:flex;justify-content:space-between;align-items:end}.pad{display:grid;grid-template-columns:50px 50px 50px;grid-template-rows:50px 50px;gap:5px;pointer-events:auto}.ctrl,.action{border:1px solid #ffffff40;background:#07131ddd;color:white;border-radius:14px;font-weight:800;touch-action:none;user-select:none}.ctrl{font-size:18px}.up{grid-column:2}.left{grid-column:1;grid-row:2}.down{grid-column:2;grid-row:2}.right{grid-column:3;grid-row:2}.actions,.drive{display:flex;gap:6px;pointer-events:auto}.action{width:58px;height:58px;font-size:9px;letter-spacing:.5px}.primary{background:#1d7958dd;border-color:#80e4b4}.hint{position:absolute;bottom:137px;left:50%;transform:translateX(-50%);background:#07131dcc;border-radius:20px;padding:7px 12px;font-size:10px;white-space:nowrap}.overlay{position:fixed;inset:0;display:grid;place-items:center;background:linear-gradient(140deg,#07131bf2,#12313aef);padding:20px;z-index:4}.card{width:min(440px,100%);padding:26px;border:1px solid #ffffff28;border-radius:22px;background:#0d2029f5}.eyebrow{font-size:10px;letter-spacing:3px;color:#8ddbb1;font-weight:900}.card h1{font-size:clamp(34px,10vw,50px);line-height:.95;letter-spacing:-2px;margin:12px 0}.card p{font-size:13px;color:#b5c7cd;line-height:1.6}.start{width:100%;padding:16px;border:0;border-radius:12px;background:#67d39e;color:#082016;font-weight:900;letter-spacing:1px}.note{font-size:10px!important;color:#7e999f!important}.hidden{display:none!important}@media(orientation:portrait){.pad{transform:scale(.9);transform-origin:bottom left}.action{width:52px;height:52px}} 
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
+</head>
+<body>
+<div id="game"></div>
+<div id="hud" class="hidden">
+ <div class="top"><div class="brand"><b>VALLEY CITY</b><small>DOWNTOWN / GREYBOX BUILD</small></div><div class="panel stats">MODE <strong id="vehicle">ON FOOT</strong><br>SPEED <strong id="speed">0</strong> KM/H</div></div>
+ <div class="panel mission"><b>FREE ROAM</b>Downtown district · first playable modular build</div>
+ <div class="hint" id="prompt">WASD / ARROWS se explore karo. E = vehicle.</div>
+ <div class="bottom">
+  <div class="pad" id="walkControls"><button class="ctrl up" data-action="forward">▲</button><button class="ctrl left" data-action="left">◀</button><button class="ctrl down" data-action="back">▼</button><button class="ctrl right" data-action="right">▶</button></div>
+  <div class="actions"><button class="action" id="enter">ENTER</button><div class="drive hidden" id="driveControls"><button class="action" data-action="steerLeft">LEFT</button><button class="action primary" data-action="throttle">GAS</button><button class="action" data-action="brake">BRAKE</button><button class="action" data-action="steerRight">RIGHT</button></div><button class="action" id="pauseButton">PAUSE</button></div>
+ </div>
+</div>
+<div class="overlay" id="intro"><div class="card"><div class="eyebrow">MODULAR PLAYABLE BUILD</div><h1>VALLEY<br>CITY.</h1><p>First connected modular build: third-person movement, a drivable city vehicle, touch controls and a streamed Downtown greybox district. Buildings and landmark are original low-poly placeholders; realistic art comes later.</p><button class="start" id="play">ENTER THE CITY</button><p class="note">Internet required for the Three.js engine. Landscape mode recommended. Designed with a low-memory Android profile.</p></div></div>
+<div class="overlay hidden" id="pause"><div class="card"><div class="eyebrow">GAME PAUSED</div><h1>TAKE A<br>BREATHER.</h1><p>Your current session remains open.</p><button class="start" id="resume">RESUME</button></div></div>
+<div class="overlay hidden" id="rotate"><div class="card"><div class="eyebrow">LANDSCAPE MODE</div><h1>ROTATE<br>DEVICE.</h1><p>For the intended mobile layout, turn your phone sideways. The browser may not allow automatic orientation locking.</p><button class="start" id="rotateClose">CONTINUE</button></div></div>
+<script type="module" src="./game/main.js"></script>
+</body></html>
