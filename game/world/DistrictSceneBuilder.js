@@ -26,12 +26,14 @@ export class DistrictSceneBuilder {
     const half = size / 2;
     const originX = cell.origin[0];
     const originZ = cell.origin[1];
-    const addBox = (x,y,z,w,h,d,material) => {
+    const colliders = [];
+    const addBox = (x,y,z,w,h,d,material,solid = false) => {
       const mesh = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), material);
       mesh.position.set(x,y,z);
       mesh.castShadow = false;
       mesh.receiveShadow = false;
       group.add(mesh);
+      if (solid) colliders.push({ minX:x-w/2, maxX:x+w/2, minZ:z-d/2, maxZ:z+d/2 });
       return mesh;
     };
 
@@ -65,7 +67,7 @@ export class DistrictSceneBuilder {
       const height = 12 + random()*40;
       const x = originX + half + bx;
       const z = originZ + half + bz;
-      addBox(x, height/2, z, width, height, depth, this.shared.colors[Math.floor(random()*this.shared.colors.length)]);
+      addBox(x, height/2, z, width, height, depth, this.shared.colors[Math.floor(random()*this.shared.colors.length)], true);
       // Repeated facade bands give the greybox a readable city scale.
       for (let y=4; y<height-2; y+=6) {
         addBox(x, y, z + depth/2 + .04, width*.82, .18, .08, this.shared.glass);
@@ -81,7 +83,7 @@ export class DistrictSceneBuilder {
     for (let i=0; i<7; i++) {
       const w = 12 - i*1.25;
       const h = 8;
-      addBox(plazaX, i*h + h/2 + .25, plazaZ, w, h, w, i%2 ? this.shared.glass : this.shared.colors[2]);
+      addBox(plazaX, i*h + h/2 + .25, plazaZ, w, h, w, i%2 ? this.shared.glass : this.shared.colors[2], true);
     }
     const spire = new THREE.Mesh(new THREE.ConeGeometry(.65, 18, 6), this.shared.glass);
     spire.position.set(plazaX, 75, plazaZ);
@@ -101,7 +103,7 @@ export class DistrictSceneBuilder {
       }
     }
     this.scene.add(group);
-    return { group, cellId: cell.id };
+    return { group, cellId: cell.id, colliders };
   }
 
   dispose(resource) {
