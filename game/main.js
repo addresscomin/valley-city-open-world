@@ -52,7 +52,7 @@ const world = new WorldManager({
   cellDisposer: resource => builder.dispose(resource)
 });
 const game = new Game({ sceneManager, inputManager: input, worldManager: world, uiManager: ui });
-const streamer = new DistrictStreamer(world, { loadRadius: 1.35, unloadRadius: 2.1 });
+const streamer = new DistrictStreamer(world, { loadRadius: .95, unloadRadius: 1.65 });
 const collision = new WorldCollision(world);
 const missions = new MissionManager();
 const navigation = new NavigationManager();
@@ -183,16 +183,16 @@ function frame(now) {
       carMesh.rotation.y = vehicle.heading;
       carMesh.position.x += Math.sin(vehicle.heading)*speed*dt;
       carMesh.position.z += Math.cos(vehicle.heading)*speed*dt;
-      carMesh.position.x = THREE.MathUtils.clamp(carMesh.position.x,2,248);
-      carMesh.position.z = THREE.MathUtils.clamp(carMesh.position.z,2,248);
+      carMesh.position.x = THREE.MathUtils.clamp(carMesh.position.x,-248,498);
+      carMesh.position.z = THREE.MathUtils.clamp(carMesh.position.z,2,498);
       if (collision.resolve(carMesh.position, previousCarPosition, 1.6)) vehicle.speed = 0;
       speedLabel.textContent = Math.round(Math.abs(speed));
       follow(carMesh.position,vehicle.heading);
     } else {
       const previousPlayerPosition = { ...player.position };
       const p = player.update(input.getPlayerInput(),dt);
-      p.x = THREE.MathUtils.clamp(p.x,2,248);
-      p.z = THREE.MathUtils.clamp(p.z,2,248);
+      p.x = THREE.MathUtils.clamp(p.x,-248,498);
+      p.z = THREE.MathUtils.clamp(p.z,2,498);
       collision.resolve(p, previousPlayerPosition, .65);
       playerMesh.position.set(p.x,0,p.z);
       playerMesh.rotation.y = player.heading;
@@ -201,6 +201,7 @@ function frame(now) {
     }
     const activePosition = vehicle.state === "occupied" ? carMesh.position : playerMesh.position;
     updateMission(activePosition);
+    updateDistrictLabel(activePosition);
     drawMinimap(activePosition, vehicle.state === "occupied" ? vehicle.heading : player.heading);
     streamTimer += dt;
     if (streamTimer > .6) {
@@ -227,26 +228,44 @@ function updateMission(position) {
     }
   }
 }
+function updateDistrictLabel(position) {
+  const cell = world.cells.find(item => position.x >= item.origin[0] && position.x <= item.origin[0]+item.size && position.z >= item.origin[1] && position.z <= item.origin[1]+item.size);
+  const district = cell ? world.getDistrict(cell.districtId) : null;
+  const label = document.querySelector("#districtName");
+  if (label) label.textContent = district ? district.name.toUpperCase() : "CITY OUTSKIRTS";
+}
 function drawMinimap(position, heading) {
   const ctx = mapContext;
   const w = mapCanvas.width, h = mapCanvas.height;
   ctx.clearRect(0,0,w,h);
-  ctx.fillStyle = "#263b3b"; ctx.fillRect(0,0,w,h);
-  const pad = 18, scale = (w-pad*2)/250;
-  ctx.strokeStyle = "#b5c2b3"; ctx.lineWidth = 13*scale;
-  for (const offset of [60,125,190]) {
-    const p = pad + offset*scale;
-    ctx.beginPath(); ctx.moveTo(pad,p); ctx.lineTo(w-pad,p); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(p,pad); ctx.lineTo(p,h-pad); ctx.stroke();
+  ctx.fillStyle = "#1e3033"; ctx.fillRect(0,0,w,h);
+  const pad = 18, minX = -250, scale = (w-pad*2)/750;
+  const mapHeight = 500*scale, top = (h-mapHeight)/2;
+  for (const cell of world.cells) {
+    const x0 = pad + (cell.origin[0]-minX)*scale;
+    const z0 = top + cell.origin[1]*scale;
+    ctx.fillStyle = cell.districtId === "marina" ? "#36585a" : cell.districtId === "desert" ? "#776748" : cell.districtId === "highway" ? "#4b5350" : "#3e4d4c";
+    ctx.fillRect(x0,z0,cell.size*scale,cell.size*scale);
+    ctx.strokeStyle = "#8d9c91"; ctx.lineWidth = 1.5;
+    ctx.strokeRect(x0,z0,cell.size*scale,cell.size*scale);
+    ctx.strokeStyle = "#b5c2b3"; ctx.lineWidth = 13*scale;
+    for (const offset of [60,125,190]) {
+      const roadY = z0 + offset*scale;
+      const roadX = x0 + offset*scale;
+      ctx.beginPath(); ctx.moveTo(x0,roadY); ctx.lineTo(x0+cell.size*scale,roadY); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(roadX,z0); ctx.lineTo(roadX,z0+cell.size*scale); ctx.stroke();
+    }
   }
-  ctx.strokeStyle = "#d7d0b2"; ctx.lineWidth = 1.5;
-  ctx.strokeRect(pad,pad,w-pad*2,h-pad*2);
+  const mapPoint = point => ({
+    x: pad + (point.x-minX)*scale,
+    y: top + point.z*scale
+  });
   if (navigation.waypoint) {
-    const wx = pad + navigation.waypoint.x*scale, wz = pad + navigation.waypoint.z*scale;
-    ctx.fillStyle = "#f4d36e"; ctx.beginPath(); ctx.arc(wx,wz,7,0,Math.PI*2); ctx.fill();
+    const p = mapPoint(navigation.waypoint);
+    ctx.fillStyle = "#f4d36e"; ctx.beginPath(); ctx.arc(p.x,p.y,7,0,Math.PI*2); ctx.fill();
   }
-  const px = pad + position.x*scale, pz = pad + position.z*scale;
-  ctx.save(); ctx.translate(px,pz); ctx.rotate(heading);
+  const p = mapPoint(position);
+  ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(heading);
   ctx.fillStyle = "#6fe3a5"; ctx.beginPath(); ctx.moveTo(0,-10); ctx.lineTo(7,8); ctx.lineTo(0,5); ctx.lineTo(-7,8); ctx.closePath(); ctx.fill();
   ctx.restore();
 }
