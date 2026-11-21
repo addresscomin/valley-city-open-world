@@ -3,8 +3,10 @@
 An original, mobile-first 3D exploration and driving game prototype.
 
 ## Play
-After GitHub Pages is enabled and the deployment finishes:
-https://addresscomin.github.io/valley-city-open-world/
+- Original prototype: https://addresscomin.github.io/valley-city-open-world/
+- Modular greybox build: https://addresscomin.github.io/valley-city-open-world/game.html
+
+The modular build is a separate page so the original prototype remains available while systems are tested.
 
 ## Current build
 - Lightweight Three.js scene with a mountain-valley environment
@@ -22,8 +24,10 @@ https://addresscomin.github.io/valley-city-open-world/
 ## Run locally
 Serve this folder with any static HTTP server. The Three.js module is loaded from jsDelivr, so an internet connection is needed.
 
-## Game architecture
-The full modular game structure is documented in [GAME_ARCHITECTURE.md](GAME_ARCHITECTURE.md). The `game/` folder now contains the initial module scaffold for game lifecycle, scene management, district metadata/streaming, player and vehicle controllers, input, missions, navigation, save data, UI state, camera and performance sampling. These modules are a foundation and are not all connected to the playable page yet.
+## Modular greybox build
+Open [game.html](game.html) for the new modular build. It connects the game lifecycle, scene manager, district streamer, procedural Downtown greybox builder, player controller, follow camera, vehicle controller, touch/keyboard input and UI state. It includes a basic on-foot mode, a drivable city vehicle, a garage marker, pause screen and landscape guidance.
+
+This is an early low-poly greybox, not realistic final art. The other scaffold modules for missions, navigation, save data and performance sampling are not yet wired into gameplay.
 
 ## World direction
 The selected setting is an original Dubai-inspired open world. The world will be built district by district to keep the Android version within memory limits. See [DUBAI_WORLD_PLAN.md](DUBAI_WORLD_PLAN.md) for the districts, technical approach, milestones and map-data licensing notes.
