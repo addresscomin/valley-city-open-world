@@ -11,6 +11,9 @@ import { CameraRig } from "./player/CameraRig.js";
 import { VehicleController } from "./vehicles/VehicleController.js";
 import { InputManager } from "./systems/InputManager.js";
 import { UIManager } from "./ui/UIManager.js";
+import { MissionManager } from "./systems/MissionManager.js";
+import { NavigationManager } from "./systems/NavigationManager.js";
+import { PerformanceMonitor } from "./systems/PerformanceMonitor.js";
 
 const mount = document.querySelector("#game");
 const hud = document.querySelector("#hud");
@@ -18,6 +21,11 @@ const intro = document.querySelector("#intro");
 const speedLabel = document.querySelector("#speed");
 const vehicleLabel = document.querySelector("#vehicle");
 const prompt = document.querySelector("#prompt");
+const mapCanvas = document.querySelector("#minimap");
+const mapContext = mapCanvas.getContext("2d");
+const missionObjective = document.querySelector("#missionObjective");
+const missionDistance = document.querySelector("#missionDistance");
+const missionTitle = document.querySelector("#missionTitle");
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x9fc4c5);
@@ -45,6 +53,12 @@ const world = new WorldManager({
 const game = new Game({ sceneManager, inputManager: input, worldManager: world, uiManager: ui });
 const streamer = new DistrictStreamer(world, { loadRadius: 1.35, unloadRadius: 2.1 });
 const collision = new WorldCollision(world);
+const missions = new MissionManager();
+const navigation = new NavigationManager();
+const performanceMonitor = new PerformanceMonitor(90);
+missions.register({ id:"downtown-discovery", type:"sightseeing", title:"Downtown Discovery", objectives:[{ id:"reach-plaza", label:"Reach the skyline plaza" }] });
+missions.start("downtown-discovery");
+navigation.setWaypoint({ x:125, z:47, label:"Downtown Skyline Plaza" });
 const player = new PlayerController({ moveSpeed: 8 });
 player.position.x = 125;
 player.position.z = 125;
@@ -151,6 +165,7 @@ function frame(now) {
   requestAnimationFrame(frame);
   const dt = Math.min((now-last)/1000,.04);
   last = now;
+  performanceMonitor.record(dt);
   if (game.state === "playing") {
     if (vehicle.state === "occupied") {
       const vInput = {
@@ -179,6 +194,9 @@ function frame(now) {
       follow(playerMesh.position,player.heading);
       speedLabel.textContent = "0";
     }
+    const activePosition = vehicle.state === "occupied" ? carMesh.position : playerMesh.position;
+    updateMission(activePosition);
+    drawMinimap(activePosition, vehicle.state === "occupied" ? vehicle.heading : player.heading);
     streamTimer += dt;
     if (streamTimer > .6) {
       streamTimer = 0;
@@ -187,6 +205,45 @@ function frame(now) {
     }
   }
   renderer.render(scene,camera);
+}
+function updateMission(position) {
+  const distance = navigation.distanceFrom(position);
+  if (distance === null) return;
+  missionDistance.textContent = `${Math.round(distance)} m away`;
+  if (distance <= 8) {
+    const state = missions.completeObjective();
+    if (state?.status === "complete") {
+      navigation.discover("downtown-skyline-plaza");
+      navigation.clearWaypoint();
+      missionTitle.textContent = "LOCATION DISCOVERED";
+      missionObjective.textContent = "Downtown skyline plaza unlocked";
+      missionDistance.textContent = "Discovery complete";
+      prompt.textContent = "Downtown Discovery complete!";
+    }
+  }
+}
+function drawMinimap(position, heading) {
+  const ctx = mapContext;
+  const w = mapCanvas.width, h = mapCanvas.height;
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle = "#263b3b"; ctx.fillRect(0,0,w,h);
+  const pad = 18, scale = (w-pad*2)/250;
+  ctx.strokeStyle = "#b5c2b3"; ctx.lineWidth = 13*scale;
+  for (const offset of [60,125,190]) {
+    const p = pad + offset*scale;
+    ctx.beginPath(); ctx.moveTo(pad,p); ctx.lineTo(w-pad,p); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(p,pad); ctx.lineTo(p,h-pad); ctx.stroke();
+  }
+  ctx.strokeStyle = "#d7d0b2"; ctx.lineWidth = 1.5;
+  ctx.strokeRect(pad,pad,w-pad*2,h-pad*2);
+  if (navigation.waypoint) {
+    const wx = pad + navigation.waypoint.x*scale, wz = pad + navigation.waypoint.z*scale;
+    ctx.fillStyle = "#f4d36e"; ctx.beginPath(); ctx.arc(wx,wz,7,0,Math.PI*2); ctx.fill();
+  }
+  const px = pad + position.x*scale, pz = pad + position.z*scale;
+  ctx.save(); ctx.translate(px,pz); ctx.rotate(heading);
+  ctx.fillStyle = "#6fe3a5"; ctx.beginPath(); ctx.moveTo(0,-10); ctx.lineTo(7,8); ctx.lineTo(0,5); ctx.lineTo(-7,8); ctx.closePath(); ctx.fill();
+  ctx.restore();
 }
 function follow(position,heading) {
   const target = cameraRig.getTarget(position,heading);
