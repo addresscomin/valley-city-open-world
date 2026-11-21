@@ -44,6 +44,9 @@ const world = new WorldManager({
 const game = new Game({ sceneManager, inputManager: input, worldManager: world, uiManager: ui });
 const streamer = new DistrictStreamer(world, { loadRadius: 1.35, unloadRadius: 2.1 });
 const player = new PlayerController({ moveSpeed: 8 });
+player.position.x = 125;
+player.position.z = 125;
+playerMesh.position.set(125,0,125);
 const cameraRig = new CameraRig({ distance: 9, height: 5, lookHeight: 1.3 });
 const vehicle = new VehicleController({ maxSpeed: 36, acceleration: 17, braking: 26 });
 
@@ -67,24 +70,30 @@ for (const x of [-1,1]) for (const z of [-1.32,1.32]) {
   wheel.position.set(x,.42,z);
   carMesh.add(wheel);
 }
-carMesh.position.set(10,0,12);
+carMesh.position.set(129,0,129);
 carMesh.visible = false;
 scene.add(carMesh);
 
 const garageMarker = new THREE.Mesh(new THREE.TorusGeometry(2.4,.16,7,28), new THREE.MeshStandardMaterial({ color: 0x65e3a2, emissive: 0x124c30 }));
 garageMarker.rotation.x = Math.PI/2;
-garageMarker.position.set(10,.25,12);
+garageMarker.position.set(129,.25,129);
 scene.add(garageMarker);
 
-const keyMap = { w:"forward", arrowup:"forward", s:"back", arrowdown:"back", a:"left", arrowleft:"left", d:"right", arrowright:"right", shift:"sprint" };
+const keyMap = { w:"forward", s:"back", a:"left", d:"right", shift:"sprint" };
+function keyboardAction(key) {
+  if (vehicle.state === "occupied") {
+    return ({ w:"throttle", arrowup:"throttle", s:"brake", arrowdown:"brake", a:"steerLeft", arrowleft:"steerLeft", d:"steerRight", arrowright:"steerRight" })[key];
+  }
+  return keyMap[key] || ({ arrowup:"forward", arrowdown:"back", arrowleft:"left", arrowright:"right" })[key];
+}
 addEventListener("keydown", event => {
-  const action = keyMap[event.key.toLowerCase()];
+  const action = keyboardAction(event.key.toLowerCase());
   if (action) input.setAction(action,true);
   if (event.key.toLowerCase()==="e") toggleVehicle();
   if (event.key==="Escape") { ui.show("pause"); document.querySelector("#pause").classList.remove("hidden"); }
 });
 addEventListener("keyup", event => {
-  const action = keyMap[event.key.toLowerCase()];
+  const action = keyboardAction(event.key.toLowerCase());
   if (action) input.setAction(action,false);
 });
 document.querySelectorAll("[data-action]").forEach(button => {
