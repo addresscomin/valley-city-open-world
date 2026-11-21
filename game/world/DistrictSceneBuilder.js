@@ -104,17 +104,18 @@ export class DistrictSceneBuilder {
       addBox(x, height+.25, z, width+.5, .5, depth+.5, this.shared.sidewalk);
     }));
 
-    // Small landmark plaza and a stepped, original skyline silhouette.
+    // Keep the plaza center clear so the discovery objective is reachable.
     const plazaX = originX + half;
     const plazaZ = originZ + half - 78;
     addBox(plazaX, .12, plazaZ, 35, .2, 35, this.shared.sidewalk);
+    const landmarkX = plazaX + 12;
     for (let i=0; i<7; i++) {
       const w = 12 - i*1.25;
       const h = 8;
-      addBox(plazaX, i*h + h/2 + .25, plazaZ, w, h, w, i%2 ? this.shared.glass : this.shared.colors[2], true);
+      addBox(landmarkX, i*h + h/2 + .25, plazaZ, w, h, w, i%2 ? this.shared.glass : this.shared.colors[2], true);
     }
     const spire = new THREE.Mesh(new THREE.ConeGeometry(.65, 18, 6), this.shared.glass);
-    spire.position.set(plazaX, 75, plazaZ);
+    spire.position.set(landmarkX, 75, plazaZ);
     group.add(spire);
 
     if (cell.districtId === "desert") {
