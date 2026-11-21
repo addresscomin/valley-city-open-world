@@ -60,14 +60,22 @@ const performanceMonitor = new PerformanceMonitor(90);
 const orientation = new OrientationManager(isLandscape => {
   if (game.state === "playing") document.querySelector("#rotate").classList.toggle("hidden", isLandscape);
 });
-missions.register({ id:"downtown-discovery", type:"sightseeing", title:"Downtown Discovery", objectives:[{ id:"reach-plaza", label:"Reach the skyline plaza" }] });
-missions.start("downtown-discovery");
-navigation.setWaypoint({ x:125, z:47, label:"Downtown Skyline Plaza" });
+missions.register({
+  id:"city-explorer", type:"exploration", title:"CITY EXPLORER",
+  objectives:[
+    { id:"downtown-plaza", label:"Visit Downtown Skyline Plaza", x:125, z:47, waypointLabel:"Skyline Plaza" },
+    { id:"marina-promenade", label:"Drive to Marina Promenade", x:455, z:210, waypointLabel:"Marina Promenade" },
+    { id:"highway-viewpoint", label:"Reach the Highway Viewpoint", x:125, z:375, waypointLabel:"Highway Viewpoint" },
+    { id:"desert-oasis", label:"Finish at Desert Oasis", x:-125, z:125, waypointLabel:"Desert Oasis" }
+  ]
+});
+missions.start("city-explorer");
+navigation.setWaypoint({ x:125, z:47, label:"Skyline Plaza" });
 const player = new PlayerController({ moveSpeed: 8 });
 player.position.x = 125;
 player.position.z = 125;
 const cameraRig = new CameraRig({ distance: 9, height: 5, lookHeight: 1.3 });
-const vehicle = new VehicleController({ maxSpeed: 36, acceleration: 17, braking: 26 });
+const vehicle = new VehicleController({ maxSpeed: 120, reverseSpeed: 18, acceleration: 42, braking: 90, steeringRate: 1.8 });
 
 const playerMesh = new THREE.Group();
 const body = new THREE.Mesh(new THREE.CapsuleGeometry(.48,.85,3,7), new THREE.MeshStandardMaterial({ color: 0xd9a978, roughness: .9 }));
@@ -185,8 +193,9 @@ function frame(now) {
       const previousCarPosition = carMesh.position.clone();
       const speed = vehicle.update(vInput,dt);
       carMesh.rotation.y = vehicle.heading;
-      carMesh.position.x += Math.sin(vehicle.heading)*speed*dt;
-      carMesh.position.z += Math.cos(vehicle.heading)*speed*dt;
+      const travelMeters = (speed / 3.6) * dt;
+      carMesh.position.x += Math.sin(vehicle.heading)*travelMeters;
+      carMesh.position.z += Math.cos(vehicle.heading)*travelMeters;
       carMesh.position.x = THREE.MathUtils.clamp(carMesh.position.x,-248,498);
       carMesh.position.z = THREE.MathUtils.clamp(carMesh.position.z,2,498);
       if (!isInsideWorld(carMesh.position,1.6)) carMesh.position.copy(previousCarPosition);
@@ -222,15 +231,24 @@ function updateMission(position) {
   const distance = navigation.distanceFrom(position);
   if (distance === null) return;
   missionDistance.textContent = `${Math.round(distance)} m away`;
-  if (distance <= 8) {
+  if (distance <= 9) {
+    const completed = missions.getCurrentObjective();
     const state = missions.completeObjective();
-    if (state?.status === "complete") {
-      navigation.discover("downtown-skyline-plaza");
+    if (!state) return;
+    if (state.status === "complete") {
+      navigation.discover(completed.id);
       navigation.clearWaypoint();
-      missionTitle.textContent = "LOCATION DISCOVERED";
-      missionObjective.textContent = "Downtown skyline plaza unlocked";
-      missionDistance.textContent = "Discovery complete";
-      prompt.textContent = "Downtown Discovery complete!";
+      missionTitle.textContent = "CITY EXPLORER COMPLETE";
+      missionObjective.textContent = "All four city destinations visited";
+      missionDistance.textContent = "4 / 4 objectives complete";
+      prompt.textContent = "Mission complete! City Explorer finished.";
+    } else {
+      navigation.discover(completed.id);
+      const next = missions.getCurrentObjective();
+      navigation.setWaypoint({ x:next.x, z:next.z, label:next.waypointLabel || next.label });
+      missionTitle.textContent = "CITY EXPLORER";
+      missionObjective.textContent = next.label;
+      prompt.textContent = `Objective complete: ${completed.label}`;
     }
   }
 }
