@@ -21,3 +21,5 @@ jobs:
             node --check --input-type=module < "$file"
           done
           echo "All game modules passed syntax validation."
+      - name: Run gameplay regression tests
+        run: node --experimental-default-type=module --test tests/*.test.js
