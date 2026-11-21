@@ -14,6 +14,7 @@ import { UIManager } from "./ui/UIManager.js";
 import { MissionManager } from "./systems/MissionManager.js";
 import { NavigationManager } from "./systems/NavigationManager.js";
 import { PerformanceMonitor } from "./systems/PerformanceMonitor.js";
+import { OrientationManager } from "./systems/OrientationManager.js";
 
 const mount = document.querySelector("#game");
 const hud = document.querySelector("#hud");
@@ -56,6 +57,9 @@ const collision = new WorldCollision(world);
 const missions = new MissionManager();
 const navigation = new NavigationManager();
 const performanceMonitor = new PerformanceMonitor(90);
+const orientation = new OrientationManager(isLandscape => {
+  if (game.state === "playing") document.querySelector("#rotate").classList.toggle("hidden", isLandscape);
+});
 missions.register({ id:"downtown-discovery", type:"sightseeing", title:"Downtown Discovery", objectives:[{ id:"reach-plaza", label:"Reach the skyline plaza" }] });
 missions.start("downtown-discovery");
 navigation.setWaypoint({ x:125, z:47, label:"Downtown Skyline Plaza" });
@@ -148,12 +152,13 @@ document.querySelector("#enter").addEventListener("click",toggleVehicle);
 document.querySelector("#play").addEventListener("click", async () => {
   intro.classList.add("hidden");
   hud.classList.remove("hidden");
+  await orientation.requestLandscape();
+  orientation.start();
   await game.start();
   game.enterWorld();
   ui.showHUD();
   await streamer.update(player.position);
-  if (matchMedia("(orientation: portrait)").matches) document.querySelector("#rotate").classList.remove("hidden");
-  else document.querySelector("#rotate").classList.add("hidden");
+  document.querySelector("#rotate").classList.toggle("hidden", orientation.isLandscape());
 });
 document.querySelector("#resume").addEventListener("click",() => { document.querySelector("#pause").classList.add("hidden"); game.resume(); ui.showHUD(); });
 document.querySelector("#pauseButton").addEventListener("click",() => { if (game.state === "playing") { game.pause(); input.clear(); document.querySelector("#pause").classList.remove("hidden"); } });
@@ -258,3 +263,4 @@ addEventListener("resize",() => {
   sceneManager.resize(innerWidth,innerHeight);
 });
 document.addEventListener("visibilitychange",() => { if (document.hidden) input.clear(); });
+addEventListener("pagehide",() => orientation.stop());
