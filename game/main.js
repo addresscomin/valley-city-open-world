@@ -57,6 +57,33 @@ const collision = new WorldCollision(world);
 const missions = new MissionManager();
 const navigation = new NavigationManager();
 const performanceMonitor = new PerformanceMonitor(90);
+let gyroSteer = 0;
+let gyroEnabled = false;
+function handleDeviceTilt(event) {
+  if (typeof event.gamma !== "number") return;
+  const tilt = THREE.MathUtils.clamp(event.gamma / 28, -1, 1);
+  gyroSteer = THREE.MathUtils.lerp(gyroSteer, tilt, .22);
+}
+async function enableGyro() {
+  try {
+    if (!("DeviceOrientationEvent" in globalThis)) {
+      prompt.textContent = "Gyro sensor is not available on this device.";
+      return;
+    }
+    if (typeof DeviceOrientationEvent.requestPermission === "function") {
+      const permission = await DeviceOrientationEvent.requestPermission();
+      if (permission !== "granted") {
+        prompt.textContent = "Gyro permission denied. Use touch steering buttons.";
+        return;
+      }
+    }
+    addEventListener("deviceorientation", handleDeviceTilt, true);
+    gyroEnabled = true;
+    prompt.textContent = "GYRO ON: tilt phone left/right to steer or look around.";
+  } catch (error) {
+    prompt.textContent = "Gyro unavailable. Touch controls remain active.";
+  }
+}
 const orientation = new OrientationManager(isLandscape => {
   if (game.state === "playing") document.querySelector("#rotate").classList.toggle("hidden", isLandscape);
 });
@@ -165,6 +192,7 @@ document.querySelector("#play").addEventListener("click", async () => {
   intro.classList.add("hidden");
   hud.classList.remove("hidden");
   await orientation.requestLandscape();
+  await enableGyro();
   orientation.start();
   await game.start();
   game.enterWorld();
@@ -188,7 +216,7 @@ function frame(now) {
       const vInput = {
         throttle: input.isPressed("throttle"),
         brake: input.isPressed("brake"),
-        steer: Number(input.isPressed("steerRight")) - Number(input.isPressed("steerLeft"))
+        steer: THREE.MathUtils.clamp(Number(input.isPressed("steerRight")) - Number(input.isPressed("steerLeft")) + gyroSteer, -1, 1)
       };
       const previousCarPosition = carMesh.position.clone();
       const speed = vehicle.update(vInput,dt);
@@ -211,7 +239,7 @@ function frame(now) {
       collision.resolve(p, previousPlayerPosition, .65);
       playerMesh.position.set(p.x,0,p.z);
       playerMesh.rotation.y = player.heading;
-      follow(playerMesh.position,player.heading);
+      follow(playerMesh.position,player.heading,gyroSteer * .65);
       speedLabel.textContent = "0";
     }
     const activePosition = vehicle.state === "occupied" ? carMesh.position : playerMesh.position;
@@ -293,8 +321,8 @@ function drawMinimap(position, heading) {
   ctx.fillStyle = "#6fe3a5"; ctx.beginPath(); ctx.moveTo(0,-10); ctx.lineTo(7,8); ctx.lineTo(0,5); ctx.lineTo(-7,8); ctx.closePath(); ctx.fill();
   ctx.restore();
 }
-function follow(position,heading) {
-  const target = cameraRig.getTarget(position,heading);
+function follow(position,heading,lookOffset = 0) {
+  const target = cameraRig.getTarget(position,heading + lookOffset);
   camera.position.lerp(new THREE.Vector3(target.x,target.y,target.z),.09);
   camera.lookAt(target.lookAt.x,target.lookAt.y,target.lookAt.z);
 }
@@ -306,4 +334,4 @@ addEventListener("resize",() => {
   sceneManager.resize(innerWidth,innerHeight);
 });
 document.addEventListener("visibilitychange",() => { if (document.hidden) input.clear(); });
-addEventListener("pagehide",() => orientation.stop());
+addEventListener("pagehide",() => { orientation.stop(); if (gyroEnabled) removeEventListener("deviceorientation",handleDeviceTilt,true); });
