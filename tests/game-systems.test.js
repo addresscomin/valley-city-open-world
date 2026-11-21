@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { PlayerController } from "../game/player/PlayerController.js";
 import { WorldCollision } from "../game/world/WorldCollision.js";
 import { MissionManager } from "../game/systems/MissionManager.js";
+import { VehicleController } from "../game/vehicles/VehicleController.js";
 
 test("on-foot diagonal movement is normalized", () => {
   const player = new PlayerController({ moveSpeed: 8 });
@@ -41,5 +42,57 @@ test("mission completes after its final objective and cannot advance again", () 
   });
   missions.start("plaza-discovery");
   assert.deepEqual(missions.completeObjective(), { objectiveIndex: 1, status: "complete" });
+  assert.equal(missions.completeObjective(), null);
+});
+
+test("vehicle enter and exit enforce occupancy state", () => {
+  const car = new VehicleController();
+  assert.equal(car.enter("city-runner"), true);
+  assert.equal(car.enter("second-car"), false);
+  assert.equal(car.exit(), true);
+  assert.equal(car.exit(), false);
+  assert.equal(car.state, "unoccupied");
+});
+
+test("vehicle acceleration is capped and speed is expressed in km/h", () => {
+  const car = new VehicleController({ maxSpeed: 100, acceleration: 50 });
+  car.enter("city-runner");
+  car.update({ throttle: true }, 5);
+  assert.equal(car.speed, 100);
+});
+
+test("vehicle brake slows forward motion before engaging reverse", () => {
+  const car = new VehicleController({ acceleration: 50, braking: 100, reverseSpeed: 20 });
+  car.enter("city-runner");
+  car.update({ throttle: true }, 0.2);
+  assert.equal(car.speed, 10);
+  car.update({ brake: true }, 0.2);
+  assert.equal(car.speed, 0);
+  car.update({ brake: true }, 0.2);
+  assert.ok(car.speed < 0);
+  assert.ok(car.speed >= -20);
+});
+
+test("vehicle steering is speed-dependent and does not rotate while stopped", () => {
+  const car = new VehicleController();
+  car.enter("city-runner");
+  car.update({ steer: 1 }, 0.05);
+  assert.equal(car.heading, 0);
+  car.update({ throttle: true, steer: 1 }, 0.05);
+  assert.ok(car.heading > 0);
+});
+
+test("mission exposes sequential objectives and completes only at the end", () => {
+  const missions = new MissionManager();
+  missions.register({ id:"tour", type:"exploration", title:"City Tour", objectives:[
+    { id:"a", label:"First stop", x:1, z:2 },
+    { id:"b", label:"Second stop", x:3, z:4 }
+  ]});
+  missions.start("tour");
+  assert.equal(missions.getCurrentObjective().id, "a");
+  assert.equal(missions.completeObjective().status, "active");
+  assert.equal(missions.getCurrentObjective().id, "b");
+  assert.equal(missions.completeObjective().status, "complete");
+  assert.equal(missions.getCurrentObjective(), null);
   assert.equal(missions.completeObjective(), null);
 });
