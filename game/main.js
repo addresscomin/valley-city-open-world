@@ -52,7 +52,7 @@ const world = new WorldManager({
   cellDisposer: resource => builder.dispose(resource)
 });
 const game = new Game({ sceneManager, inputManager: input, worldManager: world, uiManager: ui });
-const streamer = new DistrictStreamer(world, { loadRadius: .95, unloadRadius: 1.65 });
+const streamer = new DistrictStreamer(world, { loadRadius: .95, unloadRadius: 1.3 });
 const collision = new WorldCollision(world);
 const missions = new MissionManager();
 const navigation = new NavigationManager();
