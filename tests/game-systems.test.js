@@ -57,18 +57,20 @@ test("vehicle enter and exit enforce occupancy state", () => {
 test("vehicle acceleration is capped and speed is expressed in km/h", () => {
   const car = new VehicleController({ maxSpeed: 100, acceleration: 50 });
   car.enter("city-runner");
-  car.update({ throttle: true }, 5);
+  for (let i = 0; i < 100; i++) car.update({ throttle: true }, 0.05);
   assert.equal(car.speed, 100);
 });
 
 test("vehicle brake slows forward motion before engaging reverse", () => {
   const car = new VehicleController({ acceleration: 50, braking: 100, reverseSpeed: 20 });
   car.enter("city-runner");
-  car.update({ throttle: true }, 0.2);
+  for (let i = 0; i < 4; i++) car.update({ throttle: true }, 0.05);
   assert.equal(car.speed, 10);
-  car.update({ brake: true }, 0.2);
+  car.update({ brake: true }, 0.05);
+  assert.equal(car.speed, 5);
+  car.update({ brake: true }, 0.05);
   assert.equal(car.speed, 0);
-  car.update({ brake: true }, 0.2);
+  car.update({ brake: true }, 0.05);
   assert.ok(car.speed < 0);
   assert.ok(car.speed >= -20);
 });
