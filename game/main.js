@@ -5,6 +5,7 @@ import { SceneManager } from "./core/SceneManager.js";
 import { WorldManager } from "./world/WorldManager.js";
 import { DistrictStreamer } from "./world/DistrictStreamer.js";
 import { DistrictSceneBuilder } from "./world/DistrictSceneBuilder.js";
+import { WorldCollision } from "./world/WorldCollision.js";
 import { PlayerController } from "./player/PlayerController.js";
 import { CameraRig } from "./player/CameraRig.js";
 import { VehicleController } from "./vehicles/VehicleController.js";
@@ -43,10 +44,10 @@ const world = new WorldManager({
 });
 const game = new Game({ sceneManager, inputManager: input, worldManager: world, uiManager: ui });
 const streamer = new DistrictStreamer(world, { loadRadius: 1.35, unloadRadius: 2.1 });
+const collision = new WorldCollision(world);
 const player = new PlayerController({ moveSpeed: 8 });
 player.position.x = 125;
 player.position.z = 125;
-playerMesh.position.set(125,0,125);
 const cameraRig = new CameraRig({ distance: 9, height: 5, lookHeight: 1.3 });
 const vehicle = new VehicleController({ maxSpeed: 36, acceleration: 17, braking: 26 });
 
@@ -57,6 +58,7 @@ const head = new THREE.Mesh(new THREE.SphereGeometry(.3,8,6), new THREE.MeshStan
 head.position.y = 2.05;
 playerMesh.add(body,head);
 scene.add(playerMesh);
+playerMesh.position.set(125,0,125);
 
 const carMesh = new THREE.Group();
 const carBody = new THREE.Mesh(new THREE.BoxGeometry(2.1,.72,4.1), new THREE.MeshStandardMaterial({ color: 0x237364, roughness: .55 }));
@@ -90,7 +92,7 @@ addEventListener("keydown", event => {
   const action = keyboardAction(event.key.toLowerCase());
   if (action) input.setAction(action,true);
   if (event.key.toLowerCase()==="e") toggleVehicle();
-  if (event.key==="Escape") { ui.show("pause"); document.querySelector("#pause").classList.remove("hidden"); }
+  if (event.key==="Escape" && game.state === "playing") { game.pause(); input.clear(); document.querySelector("#pause").classList.remove("hidden"); }
 });
 addEventListener("keyup", event => {
   const action = keyboardAction(event.key.toLowerCase());
@@ -139,8 +141,8 @@ document.querySelector("#play").addEventListener("click", async () => {
   if (matchMedia("(orientation: portrait)").matches) document.querySelector("#rotate").classList.remove("hidden");
   else document.querySelector("#rotate").classList.add("hidden");
 });
-document.querySelector("#resume").addEventListener("click",() => { document.querySelector("#pause").classList.add("hidden"); ui.showHUD(); });
-document.querySelector("#pauseButton").addEventListener("click",() => { document.querySelector("#pause").classList.remove("hidden"); ui.show("pause"); });
+document.querySelector("#resume").addEventListener("click",() => { document.querySelector("#pause").classList.add("hidden"); game.resume(); ui.showHUD(); });
+document.querySelector("#pauseButton").addEventListener("click",() => { if (game.state === "playing") { game.pause(); input.clear(); document.querySelector("#pause").classList.remove("hidden"); } });
 document.querySelector("#rotateClose").addEventListener("click",() => document.querySelector("#rotate").classList.add("hidden"));
 
 let last = performance.now();
@@ -156,16 +158,22 @@ function frame(now) {
         brake: input.isPressed("brake"),
         steer: Number(input.isPressed("steerRight")) - Number(input.isPressed("steerLeft"))
       };
+      const previousCarPosition = carMesh.position.clone();
       const speed = vehicle.update(vInput,dt);
       carMesh.rotation.y = vehicle.heading;
       carMesh.position.x += Math.sin(vehicle.heading)*speed*dt;
       carMesh.position.z += Math.cos(vehicle.heading)*speed*dt;
-      carMesh.position.x = THREE.MathUtils.clamp(carMesh.position.x,-118,118);
-      carMesh.position.z = THREE.MathUtils.clamp(carMesh.position.z,-118,118);
+      carMesh.position.x = THREE.MathUtils.clamp(carMesh.position.x,2,248);
+      carMesh.position.z = THREE.MathUtils.clamp(carMesh.position.z,2,248);
+      if (collision.resolve(carMesh.position, previousCarPosition, 1.6)) vehicle.speed = 0;
       speedLabel.textContent = Math.round(Math.abs(speed));
       follow(carMesh.position,vehicle.heading);
     } else {
+      const previousPlayerPosition = { ...player.position };
       const p = player.update(input.getPlayerInput(),dt);
+      p.x = THREE.MathUtils.clamp(p.x,2,248);
+      p.z = THREE.MathUtils.clamp(p.z,2,248);
+      collision.resolve(p, previousPlayerPosition, .65);
       playerMesh.position.set(p.x,0,p.z);
       playerMesh.rotation.y = player.heading;
       follow(playerMesh.position,player.heading);
