@@ -17,7 +17,7 @@ https://addresscomin.github.io/valley-city-open-world/
 
 ## Controls
 - Desktop: WASD / arrow keys to move; E to enter or exit the car; Space / BOOST to boost.
-- Phone: use the on-screen direction pad and action buttons. Move close to the green marker to enter the car.
+- Phone: use the on-screen direction pad to walk. Move close to the green marker and tap ENTER VEHICLE; dedicated LEFT / GAS / BRAKE / RIGHT controls appear while driving.
 
 ## Run locally
 Serve this folder with any static HTTP server. The Three.js module is loaded from jsDelivr, so an internet connection is needed.
