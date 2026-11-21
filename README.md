@@ -8,6 +8,9 @@ An original, mobile-first 3D exploration and driving game prototype.
 
 The modular build is a separate page so the original prototype remains available while systems are tested.
 
+### First-time Pages setup
+The current Actions run reports that GitHub Pages is not enabled for this repository. A repository admin must open **Settings → Pages → Build and deployment → Source**, select **GitHub Actions**, and save once. After that, pushes to `main` can deploy both pages automatically.
+
 ## Current build
 - Lightweight Three.js scene with a mountain-valley environment
 - Procedural town blocks, roads, trees and distant ridges
