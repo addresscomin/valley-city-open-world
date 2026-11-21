@@ -9,6 +9,7 @@ export class DistrictSceneBuilder {
     this.scene = scene;
     this.shared = {
       ground: new THREE.MeshStandardMaterial({ color: 0xb79d70, roughness: 1 }),
+      water: new THREE.MeshStandardMaterial({ color: 0x3f8790, roughness: .32, metalness: .18 }),
       road: new THREE.MeshStandardMaterial({ color: 0x343a3e, roughness: 1 }),
       sidewalk: new THREE.MeshStandardMaterial({ color: 0x858783, roughness: 1 }),
       lane: new THREE.MeshStandardMaterial({ color: 0xe6d8b4, roughness: 1 }),
@@ -37,12 +38,14 @@ export class DistrictSceneBuilder {
       return mesh;
     };
 
-    const ground = new THREE.Mesh(new THREE.PlaneGeometry(size,size), this.shared.ground);
+    const groundColor = cell.districtId === "desert" ? 0xc4a875 : cell.districtId === "marina" ? 0xb7a784 : cell.districtId === "highway" ? 0xa99a7e : 0xb79d70;
+    const groundMaterial = new THREE.MeshStandardMaterial({ color: groundColor, roughness: 1 });
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(size,size), groundMaterial);
     ground.rotation.x = -Math.PI / 2;
     ground.position.set(originX + half, -.12, originZ + half);
     group.add(ground);
 
-    // A clear central boulevard plus two cross streets.
+    // Perimeter roads keep adjacent district cells connected.\n    addBox(originX + half, .01, originZ, size, .08, 10, this.shared.road);\n    addBox(originX + half, .01, originZ + size, size, .08, 10, this.shared.road);\n    addBox(originX, .01, originZ + half, 10, .08, size, this.shared.road);\n    addBox(originX + size, .01, originZ + half, 10, .08, size, this.shared.road);\n\n    // A clear central boulevard plus two cross streets.
     for (const offset of [-65, 0, 65]) {
       addBox(originX + half, .015, originZ + offset + half, size, .08, 13, this.shared.road);
       addBox(originX + offset + half, .02, originZ + half, 13, .08, size, this.shared.road);
@@ -50,7 +53,7 @@ export class DistrictSceneBuilder {
       addBox(originX + offset + half, .06, originZ + half, .22, .04, size, this.shared.lane);
     }
 
-    // Sidewalk strips on the boulevard edges.
+    if (cell.districtId === "marina") {\n      const water = new THREE.Mesh(new THREE.PlaneGeometry(size, 34), this.shared.water);\n      water.rotation.x = -Math.PI / 2;\n      water.position.set(originX + half, -.015, originZ + size - 18);\n      group.add(water);\n      addBox(originX + half, .12, originZ + size - 39, size, .24, 7, this.shared.sidewalk);\n    }\n    if (cell.districtId === "highway") {\n      addBox(originX + half, .08, originZ + half, size, .16, 25, this.shared.road);\n      addBox(originX + half, .62, originZ + half - 14, size, 1.1, .7, this.shared.sidewalk);\n      addBox(originX + half, .62, originZ + half + 14, size, 1.1, .7, this.shared.sidewalk);\n    }\n\n    // Sidewalk strips on the boulevard edges.
     for (const side of [-1,1]) {
       addBox(originX + half, .08, originZ + half + side*8.5, size, .18, 2.2, this.shared.sidewalk);
       addBox(originX + half + side*8.5, .08, originZ + half, 2.2, .18, size, this.shared.sidewalk);
@@ -61,10 +64,10 @@ export class DistrictSceneBuilder {
     const random = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
     const blocks = [-95,-32,32,95];
     blocks.forEach((bx, ix) => blocks.forEach((bz, iz) => {
-      if (Math.abs(bx) < 40 && Math.abs(bz) < 40) return;
+      if (Math.abs(bx) < 40 && Math.abs(bz) < 40) return;\n      if (cell.districtId === "desert" && (Math.abs(bx) < 90 || Math.abs(bz) < 90)) return;
       const width = 17 + random()*12;
       const depth = 17 + random()*12;
-      const height = 12 + random()*40;
+      const height = cell.districtId === "marina" ? 24 + random()*48 : cell.districtId === "highway" ? 18 + random()*42 : 12 + random()*40;
       const x = originX + half + bx;
       const z = originZ + half + bz;
       addBox(x, height/2, z, width, height, depth, this.shared.colors[Math.floor(random()*this.shared.colors.length)], true);
@@ -89,7 +92,7 @@ export class DistrictSceneBuilder {
     spire.position.set(plazaX, 75, plazaZ);
     group.add(spire);
 
-    // Palm-like low-poly street greenery along the main avenue.
+    if (cell.districtId === "desert") {\n      for (let i=0; i<8; i++) {\n        const dune = new THREE.Mesh(new THREE.ConeGeometry(18 + random()*18, 12 + random()*16, 5), new THREE.MeshStandardMaterial({ color: i%2 ? 0xb99b69 : 0xd0b47d, roughness: 1 }));\n        dune.position.set(originX + 18 + random()*(size-36), 4, originZ + 18 + random()*(size-36));\n        group.add(dune);\n      }\n    }\n\n    // Palm-like low-poly street greenery along the main avenue.
     for (let i=-4; i<=4; i++) {
       for (const side of [-1,1]) {
         const x = originX + half + i*24;
