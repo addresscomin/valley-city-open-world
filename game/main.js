@@ -122,6 +122,10 @@ document.querySelectorAll("[data-action]").forEach(button => {
   for (const type of ["pointerup","pointercancel","pointerleave"]) button.addEventListener(type, () => input.setAction(action,false));
 });
 
+function isInsideWorld(position, margin = 0) {
+  return world.cells.some(cell => position.x >= cell.origin[0]+margin && position.x <= cell.origin[0]+cell.size-margin && position.z >= cell.origin[1]+margin && position.z <= cell.origin[1]+cell.size-margin);
+}
+
 function toggleVehicle() {
   if (vehicle.state !== "occupied") {
     if (playerMesh.position.distanceTo(carMesh.position) > 7) {
@@ -185,6 +189,7 @@ function frame(now) {
       carMesh.position.z += Math.cos(vehicle.heading)*speed*dt;
       carMesh.position.x = THREE.MathUtils.clamp(carMesh.position.x,-248,498);
       carMesh.position.z = THREE.MathUtils.clamp(carMesh.position.z,2,498);
+      if (!isInsideWorld(carMesh.position,1.6)) carMesh.position.copy(previousCarPosition);
       if (collision.resolve(carMesh.position, previousCarPosition, 1.6)) vehicle.speed = 0;
       speedLabel.textContent = Math.round(Math.abs(speed));
       follow(carMesh.position,vehicle.heading);
@@ -193,6 +198,7 @@ function frame(now) {
       const p = player.update(input.getPlayerInput(),dt);
       p.x = THREE.MathUtils.clamp(p.x,-248,498);
       p.z = THREE.MathUtils.clamp(p.z,2,498);
+      if (!isInsideWorld(p,.65)) { p.x = previousPlayerPosition.x; p.z = previousPlayerPosition.z; }
       collision.resolve(p, previousPlayerPosition, .65);
       playerMesh.position.set(p.x,0,p.z);
       playerMesh.rotation.y = player.heading;
