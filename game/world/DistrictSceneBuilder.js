@@ -68,12 +68,13 @@ export class DistrictSceneBuilder {
       water.rotation.x = -Math.PI / 2;
       water.position.set(originX + half, -.015, originZ + size - 18);
       group.add(water);
+      colliders.push({ minX:originX, maxX:originX+size, minZ:originZ+size-35, maxZ:originZ+size });
       addBox(originX + half, .12, originZ + size - 39, size, .24, 7, this.shared.sidewalk);
     }
     if (cell.districtId === "highway") {
       addBox(originX + half, .08, originZ + half, size, .16, 25, this.shared.road);
-      addBox(originX + half, .62, originZ + half - 14, size, 1.1, .7, this.shared.sidewalk);
-      addBox(originX + half, .62, originZ + half + 14, size, 1.1, .7, this.shared.sidewalk);
+      addBox(originX + half, .62, originZ + half - 14, size, 1.1, .7, this.shared.sidewalk, true);
+      addBox(originX + half, .62, originZ + half + 14, size, 1.1, .7, this.shared.sidewalk, true);
     }
 
     // Sidewalk strips on the boulevard edges.
