@@ -22,6 +22,9 @@ https://addresscomin.github.io/valley-city-open-world/
 ## Run locally
 Serve this folder with any static HTTP server. The Three.js module is loaded from jsDelivr, so an internet connection is needed.
 
+## Game architecture
+The full modular game structure is documented in [GAME_ARCHITECTURE.md](GAME_ARCHITECTURE.md). The `game/` folder now contains the initial module scaffold for game lifecycle, scene management, district metadata/streaming, player and vehicle controllers, input, missions, navigation, save data, UI state, camera and performance sampling. These modules are a foundation and are not all connected to the playable page yet.
+
 ## World direction
 The selected setting is an original Dubai-inspired open world. The world will be built district by district to keep the Android version within memory limits. See [DUBAI_WORLD_PLAN.md](DUBAI_WORLD_PLAN.md) for the districts, technical approach, milestones and map-data licensing notes.
 
