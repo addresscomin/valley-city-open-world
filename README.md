@@ -28,7 +28,7 @@ The current Actions run reports that GitHub Pages is not enabled for this reposi
 Serve this folder with any static HTTP server. The Three.js module is loaded from jsDelivr, so an internet connection is needed.
 
 ## Modular greybox build
-Open [game.html](game.html) for the new modular build. It connects the game lifecycle, scene manager, district streamer, procedural Downtown greybox builder, player controller, follow camera, vehicle controller, touch/keyboard input and UI state. It includes a basic on-foot mode, a drivable city vehicle, a garage marker, pause screen and landscape guidance.
+Open [game.html](game.html) for the new modular build. It connects the game lifecycle, scene manager, district streamer, procedural Downtown greybox builder, player controller, follow camera, vehicle controller, touch/keyboard input and UI state. It includes a basic on-foot mode, a drivable city vehicle, building-block collision, a garage marker, a Downtown Discovery sightseeing objective, waypoint distance, a minimap, pause screen and landscape guidance.
 
 This is an early low-poly greybox, not realistic final art. The other scaffold modules for missions, navigation, save data and performance sampling are not yet wired into gameplay.
 
