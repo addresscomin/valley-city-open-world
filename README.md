@@ -22,8 +22,11 @@ https://addresscomin.github.io/valley-city-open-world/
 ## Run locally
 Serve this folder with any static HTTP server. The Three.js module is loaded from jsDelivr, so an internet connection is needed.
 
+## World direction
+The selected setting is an original Dubai-inspired open world. The world will be built district by district to keep the Android version within memory limits. See [DUBAI_WORLD_PLAN.md](DUBAI_WORLD_PLAN.md) for the districts, technical approach, milestones and map-data licensing notes.
+
 ## Roadmap
-This is the first playable foundation, not a finished GTA-scale game. Planned expansions: mission system, minimap/navigation, traffic and pedestrians, vehicle selection, sound, save data, settings, optimized asset packs, and Android packaging.
+This is the first playable foundation, not a finished open-world game. Dubai districts, real-world map integration, missions, traffic, pedestrians, vehicle selection, sound, save data, settings and Android packaging are not complete yet.
 
 ## Performance
 Designed to keep geometry simple and pixel ratio capped for entry-level Android devices. Close other heavy apps for smoother play. Landscape mode is recommended.
