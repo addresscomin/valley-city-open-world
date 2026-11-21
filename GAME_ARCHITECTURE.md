@@ -90,7 +90,7 @@ C. World coordinate system, road graph and district/cell definitions
 D. Character controller, animation states and follow camera  
 E. Vehicle controller, garage and touch driving controls  
 F. HUD, minimap, waypoint and mission framework  
-G. First complete greybox district with collision and navigation  
+G. Four connected district greybox cells with collision, streaming and navigation  
 H. Replace greybox meshes with licensed, optimized 3D assets  
 I. Lighting, materials, weather and audio polish  
 J. Traffic, pedestrians, ambient activities and save progression  
@@ -107,4 +107,4 @@ L. Desktop input, graphics and packaging pass
 - Existing playable prototype remains available during the transition.
 
 ## Current status
-The repository contains an early playable Three.js prototype. This architecture is the structural blueprint and module scaffold; it does not mean all systems listed above are already implemented or connected. The next phase is to wire modules into the game one system at a time, then build the first complete greybox district before high-detail art.
+The repository contains the original playable Three.js prototype plus a separate modular playable build. The modular build now connects game lifecycle, scene management, four adjacent district cells, low-memory district streaming, procedural district greyboxes, building collision, on-foot movement, vehicle driving, touch/keyboard input, landscape guidance, minimap, waypoint navigation and a sightseeing discovery objective. District geometry remains low-poly placeholder art. Traffic, pedestrians, detailed road/bridge networks, final assets, advanced physics, audio, save progression and Android packaging are still pending.
