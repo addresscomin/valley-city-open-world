@@ -28,7 +28,7 @@ The current Actions run reports that GitHub Pages is not enabled for this reposi
 Serve this folder with any static HTTP server. The Three.js module is loaded from jsDelivr, so an internet connection is needed.
 
 ## Modular greybox build
-Open [game.html](game.html) for the new modular build. It connects the game lifecycle, scene manager, district streamer, procedural Downtown greybox builder, player controller, follow camera, vehicle controller, touch/keyboard input and UI state. It includes a basic on-foot mode, a drivable city vehicle, building-block collision, a garage marker, a Downtown Discovery sightseeing objective, waypoint distance, a minimap, pause screen, automatic landscape-lock request with rotate guidance fallback and landscape HUD.
+Open [game.html](game.html) for the new modular build. It connects the game lifecycle, scene manager, district streamer, procedural Downtown greybox builder, player controller, follow camera, vehicle controller, touch/keyboard input and UI state. It includes a basic on-foot mode, a drivable city vehicle, building-block collision, a garage marker, a Downtown Discovery sightseeing objective, waypoint distance, a full-world minimap, pause screen, automatic landscape-lock request with rotate guidance fallback and landscape HUD. Four adjacent greybox cells represent Downtown, Marina waterfront, Sheikh Zayed Corridor and Desert Outskirts; cells stream around the player.
 
 This is an early low-poly greybox, not realistic final art. The other scaffold modules for missions, navigation, save data and performance sampling are not yet wired into gameplay.
 
@@ -36,7 +36,7 @@ This is an early low-poly greybox, not realistic final art. The other scaffold m
 The selected setting is an original Dubai-inspired open world. The world will be built district by district to keep the Android version within memory limits. See [DUBAI_WORLD_PLAN.md](DUBAI_WORLD_PLAN.md) for the districts, technical approach, milestones and map-data licensing notes.
 
 ## Roadmap
-This is the first playable foundation, not a finished open-world game. Dubai districts, real-world map integration, missions, traffic, pedestrians, vehicle selection, sound, save data, settings and Android packaging are not complete yet.
+This is the first playable foundation, not a finished open-world game. Realistic licensed assets, detailed road networks, traffic, pedestrians, expanded missions, vehicle selection, sound, save data, settings and Android packaging are not complete yet.
 
 ## Performance
 Designed to keep geometry simple and pixel ratio capped for entry-level Android devices. Close other heavy apps for smoother play. Landscape mode is recommended.
