@@ -9,6 +9,11 @@ export class DistrictSceneBuilder {
     this.scene = scene;
     this.shared = {
       ground: new THREE.MeshStandardMaterial({ color: 0xb79d70, roughness: 1 }),
+      groundMarina: new THREE.MeshStandardMaterial({ color: 0xb7a784, roughness: 1 }),
+      groundHighway: new THREE.MeshStandardMaterial({ color: 0xa99a7e, roughness: 1 }),
+      groundDesert: new THREE.MeshStandardMaterial({ color: 0xc4a875, roughness: 1 }),
+      duneA: new THREE.MeshStandardMaterial({ color: 0xb99b69, roughness: 1 }),
+      duneB: new THREE.MeshStandardMaterial({ color: 0xd0b47d, roughness: 1 }),
       water: new THREE.MeshStandardMaterial({ color: 0x3f8790, roughness: .32, metalness: .18 }),
       road: new THREE.MeshStandardMaterial({ color: 0x343a3e, roughness: 1 }),
       sidewalk: new THREE.MeshStandardMaterial({ color: 0x858783, roughness: 1 }),
@@ -38,8 +43,7 @@ export class DistrictSceneBuilder {
       return mesh;
     };
 
-    const groundColor = cell.districtId === "desert" ? 0xc4a875 : cell.districtId === "marina" ? 0xb7a784 : cell.districtId === "highway" ? 0xa99a7e : 0xb79d70;
-    const groundMaterial = new THREE.MeshStandardMaterial({ color: groundColor, roughness: 1 });
+    const groundMaterial = cell.districtId === "desert" ? this.shared.groundDesert : cell.districtId === "marina" ? this.shared.groundMarina : cell.districtId === "highway" ? this.shared.groundHighway : this.shared.ground;
     const ground = new THREE.Mesh(new THREE.PlaneGeometry(size,size), groundMaterial);
     ground.rotation.x = -Math.PI / 2;
     ground.position.set(originX + half, -.12, originZ + half);
@@ -92,7 +96,7 @@ export class DistrictSceneBuilder {
     spire.position.set(plazaX, 75, plazaZ);
     group.add(spire);
 
-    if (cell.districtId === "desert") {\n      for (let i=0; i<8; i++) {\n        const dune = new THREE.Mesh(new THREE.ConeGeometry(18 + random()*18, 12 + random()*16, 5), new THREE.MeshStandardMaterial({ color: i%2 ? 0xb99b69 : 0xd0b47d, roughness: 1 }));\n        dune.position.set(originX + 18 + random()*(size-36), 4, originZ + 18 + random()*(size-36));\n        group.add(dune);\n      }\n    }\n\n    // Palm-like low-poly street greenery along the main avenue.
+    if (cell.districtId === "desert") {\n      for (let i=0; i<8; i++) {\n        const dune = new THREE.Mesh(new THREE.ConeGeometry(18 + random()*18, 12 + random()*16, 5), i%2 ? this.shared.duneA : this.shared.duneB);\n        dune.position.set(originX + 18 + random()*(size-36), 4, originZ + 18 + random()*(size-36));\n        group.add(dune);\n      }\n    }\n\n    // Palm-like low-poly street greenery along the main avenue.
     for (let i=-4; i<=4; i++) {
       for (const side of [-1,1]) {
         const x = originX + half + i*24;
